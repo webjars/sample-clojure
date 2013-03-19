@@ -1,7 +1,16 @@
 (ns web
-  (:use noir.core)
-  (:require [noir.server :as server]))
+  (:use [ring.adapter.jetty]
+        [ring.middleware.resource]))
 
-(defpage "/" [] "hello, world")
+(defn handler [request]
+    {:status 404
+     :headers {"Content-Type" "text/html"}
+     :body (str "Cannot find " (:uri request))})
 
-(server/start (Integer/parseInt (or (System/getenv "PORT") "8080")))
+(def app
+  (-> handler
+    (wrap-resource "public")
+    (wrap-resource "/META-INF/resources")))
+
+(defn -main []
+  (run-jetty app {:port (Integer/parseInt (or (System/getenv "PORT") "8080"))}))
